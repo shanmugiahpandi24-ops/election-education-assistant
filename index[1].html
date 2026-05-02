@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="VoteWise — AI-powered election education assistant. Learn about voting, registration, polling stations, candidates, and election results." />
+  <meta name="theme-color" content="#1a56db" />
+  <title>VoteWise — Election Education Assistant</title>
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & base ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #1a56db;
+      --blue-d:  #1341a8;
+      --blue-l:  #e8f0fe;
+      --green:   #057a55;
+      --red:     #c81e1e;
+      --gray-1:  #111827;
+      --gray-2:  #374151;
+      --gray-3:  #6b7280;
+      --gray-4:  #d1d5db;
+      --gray-5:  #f9fafb;
+      --white:   #ffffff;
+      --radius:  10px;
+      --shadow:  0 4px 20px rgba(0,0,0,.08);
+      --focus:   0 0 0 3px rgba(26,86,219,.45);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--gray-5);
+      color: var(--gray-1);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Skip link ──────────────────────────────────────────────────── */
+    .skip-link {
+      position: absolute;
+      top: -9999px; left: 0;
+      background: var(--blue);
+      color: var(--white);
+      padding: .75rem 1.5rem;
+      border-radius: 0 0 var(--radius) 0;
+      font-weight: 600;
+      z-index: 9999;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Focus ring ─────────────────────────────────────────────────── */
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    header {
+      background: var(--blue);
+      color: var(--white);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    header svg { flex-shrink: 0; }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    header p  { font-size: .85rem; opacity: .85; margin-top: .1rem; }
+
+    /* ── Layout ─────────────────────────────────────────────────────── */
+    main {
+      max-width: 860px;
+      margin: 2rem auto;
+      padding: 0 1rem 4rem;
+    }
+
+    /* ── Card ───────────────────────────────────────────────────────── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    /* ── Form controls ──────────────────────────────────────────────── */
+    label {
+      display: block;
+      font-size: .88rem;
+      font-weight: 500;
+      margin-bottom: .35rem;
+      color: var(--gray-2);
+    }
+
+    select, textarea {
+      width: 100%;
+      border: 1.5px solid var(--gray-4);
+      border-radius: var(--radius);
+      padding: .65rem .9rem;
+      font-size: .95rem;
+      font-family: inherit;
+      color: var(--gray-1);
+      background: var(--white);
+      transition: border-color .15s;
+    }
+    select:focus, textarea:focus {
+      border-color: var(--blue);
+      box-shadow: var(--focus);
+      outline: none;
+    }
+    textarea { resize: vertical; min-height: 100px; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+
+    /* ── Buttons ────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+      padding: .65rem 1.4rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: .95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--blue); color: var(--white); }
+    .btn-primary:hover { background: var(--blue-d); }
+    .btn-secondary { background: var(--blue-l); color: var(--blue); }
+    .btn-secondary:hover { background: #d0e2fc; }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .btn-group {
+      display: flex;
+      gap: .75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── Answer box ─────────────────────────────────────────────────── */
+    #answer-box {
+      margin-top: 1.25rem;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      border-left: 4px solid var(--blue);
+      background: var(--blue-l);
+      display: none;
+    }
+    #answer-box.visible { display: block; }
+    #answer-text { white-space: pre-wrap; line-height: 1.7; }
+
+    /* ── Quiz ───────────────────────────────────────────────────────── */
+    #quiz-options {
+      list-style: none;
+      margin-top: 1rem;
+      display: grid;
+      gap: .6rem;
+    }
+    .quiz-option {
+      padding: .75rem 1rem;
+      border: 1.5px solid var(--gray-4);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      font-size: .95rem;
+    }
+    .quiz-option:hover  { border-color: var(--blue); background: var(--blue-l); }
+    .quiz-option:focus  { outline: 3px solid var(--blue); outline-offset: 2px; }
+    .quiz-option.correct { border-color: var(--green); background: #d1fae5; }
+    .quiz-option.wrong   { border-color: var(--red);   background: #fee2e2; }
+
+    #quiz-explanation {
+      margin-top: 1rem;
+      padding: .9rem 1rem;
+      border-radius: var(--radius);
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      display: none;
+    }
+    #quiz-explanation.visible { display: block; }
+
+    /* ── Status / spinner ───────────────────────────────────────────── */
+    .status {
+      font-size: .88rem;
+      color: var(--gray-3);
+      margin-top: .5rem;
+      min-height: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--gray-4);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+    .spinner.active { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Alert ──────────────────────────────────────────────────────── */
+    .alert {
+      padding: .75rem 1rem;
+      border-radius: var(--radius);
+      margin-top: .75rem;
+      font-size: .9rem;
+      display: none;
+    }
+    .alert.visible { display: block; }
+    .alert-error { background: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
+
+    /* ── Character counter ──────────────────────────────────────────── */
+    .char-count {
+      font-size: .8rem;
+      color: var(--gray-3);
+      text-align: right;
+      margin-top: .25rem;
+    }
+    .char-count.warn { color: var(--red); }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: .82rem;
+      color: var(--gray-3);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Skip navigation link for keyboard / screen-reader users -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ── Header ────────────────────────────────────────────────────── -->
+  <header role="banner">
+    <svg aria-hidden="true" focusable="false" width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="18" r="18" fill="white" fill-opacity=".2"/>
+      <path d="M10 18l5 5 11-11" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <h1>VoteWise</h1>
+      <p>AI-powered Election Education Assistant · Powered by Google Gemini</p>
+    </div>
+  </header>
+
+  <!-- ── Main ──────────────────────────────────────────────────────── -->
+  <main id="main-content" role="main" tabindex="-1">
+
+    <!-- ── Ask a question ─────────────────────────────────────────── -->
+    <section class="card" aria-labelledby="ask-heading">
+      <h2 id="ask-heading">
+        <span aria-hidden="true">🗳️</span> Ask an Election Question
+      </h2>
+
+      <div class="row">
+        <div>
+          <label for="topic-select">Topic</label>
+          <select id="topic-select" name="topic" aria-describedby="topic-hint">
+            {% for key, label in topics.items() %}
+            <option value="{{ key }}">{{ label | title }}</option>
+            {% endfor %}
+          </select>
+          <span id="topic-hint" class="char-count">Choose the topic closest to your question</span>
+        </div>
+        <div>
+          <label for="lang-select">Language</label>
+          <select id="lang-select" name="lang" aria-describedby="lang-hint">
+            {% for code, name in languages.items() %}
+            <option value="{{ code }}" {% if code == 'en' %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+          <span id="lang-hint" class="char-count">Select your preferred response language</span>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <label for="question-input">Your Question <span aria-label="required">*</span></label>
+        <textarea
+          id="question-input"
+          name="question"
+          rows="4"
+          maxlength="1000"
+          placeholder="e.g. How do I register to vote in my state?"
+          aria-required="true"
+          aria-describedby="question-counter question-error"
+        ></textarea>
+        <div id="question-counter" class="char-count" aria-live="polite" aria-atomic="true">0 / 1000</div>
+      </div>
+
+      <div
+        id="question-error"
+        class="alert alert-error"
+        role="alert"
+        aria-live="assertive"
+      ></div>
+
+      <div class="btn-group">
+        <button
+          id="ask-btn"
+          class="btn btn-primary"
+          type="button"
+          aria-controls="answer-box"
+          aria-describedby="ask-status"
+        >
+          <span aria-hidden="true">✨</span> Ask VoteWise
+        </button>
+        <button
+          id="clear-btn"
+          class="btn btn-secondary"
+          type="button"
+          aria-label="Clear question and answer"
+        >
+          Clear
+        </button>
+      </div>
+
+      <p id="ask-status" class="status" aria-live="polite" aria-atomic="true">
+        <span class="spinner" id="ask-spinner" role="status" aria-label="Loading answer"></span>
+        <span id="ask-status-text"></span>
+      </p>
+
+      <!-- Answer box -->
+      <div
+        id="answer-box"
+        role="region"
+        aria-label="AI-generated answer"
+        aria-live="polite"
+        tabindex="-1"
+      >
+        <p id="answer-text"></p>
+      </div>
+    </section>
+
+    <!-- ── Quiz ───────────────────────────────────────────────────── -->
+    <section class="card" aria-labelledby="quiz-heading">
+      <h2 id="quiz-heading">
+        <span aria-hidden="true">🎯</span> Test Your Knowledge
+      </h2>
+      <p style="font-size:.9rem;color:var(--gray-3);margin-bottom:1rem;">
+        Generate a quick multiple-choice question and check your civics knowledge.
+      </p>
+
+      <div style="max-width:260px;">
+        <label for="quiz-topic-select">Quiz Topic</label>
+        <select id="quiz-topic-select" name="quiz-topic">
+          {% for key, label in topics.items() %}
+          <option value="{{ key }}">{{ label | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="btn-group">
+        <button
+          id="quiz-btn"
+          class="btn btn-primary"
+          type="button"
+          aria-controls="quiz-container"
+        >
+          <span aria-hidden="true">🎲</span> Generate Question
+        </button>
+      </div>
+
+      <p id="quiz-status" class="status" aria-live="polite" aria-atomic="true">
+        <span class="spinner" id="quiz-spinner" role="status" aria-label="Loading quiz"></span>
+        <span id="quiz-status-text"></span>
+      </p>
+
+      <div id="quiz-container" aria-live="polite">
+        <p id="quiz-question" style="font-weight:600;margin-top:1rem;"></p>
+        <ul
+          id="quiz-options"
+          role="listbox"
+          aria-label="Quiz answer options"
+        ></ul>
+        <div
+          id="quiz-explanation"
+          role="alert"
+          aria-live="polite"
+        ></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <p>VoteWise · Built with Google Gemini AI for Virtual PromptWars Challenge 2 ·
+       <a href="/health" aria-label="Check API health status">API Health</a>
+    </p>
+  </footer>
+
+  <!-- ── JavaScript ─────────────────────────────────────────────── -->
+  <script>
+    'use strict';
+
+    // ── Helpers ────────────────────────────────────────────────────────
+    /**
+     * Show or hide a spinner element.
+     * @param {HTMLElement} el - Spinner element.
+     * @param {boolean} show - True to show, false to hide.
+     */
+    function setSpinner(el, show) {
+      el.classList.toggle('active', show);
+    }
+
+    /**
+     * Display an error message inside an alert element.
+     * @param {HTMLElement} el - Alert container element.
+     * @param {string} msg - Error message text.
+     */
+    function showError(el, msg) {
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    /**
+     * Clear and hide an alert element.
+     * @param {HTMLElement} el - Alert container element.
+     */
+    function clearError(el) {
+      el.textContent = '';
+      el.classList.remove('visible');
+    }
+
+    /**
+     * POST JSON to an API endpoint and return parsed response.
+     * @param {string} url - API endpoint path.
+     * @param {object} body - Request payload.
+     * @returns {Promise<object>} Parsed JSON response.
+     */
+    async function apiPost(url, body) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      return res.json();
+    }
+
+    // ── Character counter ──────────────────────────────────────────────
+    const questionInput = document.getElementById('question-input');
+    const counter       = document.getElementById('question-counter');
+
+    questionInput.addEventListener('input', () => {
+      const len = questionInput.value.length;
+      counter.textContent = `${len} / 1000`;
+      counter.classList.toggle('warn', len > 900);
+    });
+
+    // ── Ask ────────────────────────────────────────────────────────────
+    const askBtn      = document.getElementById('ask-btn');
+    const clearBtn    = document.getElementById('clear-btn');
+    const answerBox   = document.getElementById('answer-box');
+    const answerText  = document.getElementById('answer-text');
+    const askSpinner  = document.getElementById('ask-spinner');
+    const askStatusTx = document.getElementById('ask-status-text');
+    const qError      = document.getElementById('question-error');
+
+    /**
+     * Submit the user's question to the /api/ask endpoint
+     * and display the AI answer.
+     */
+    async function handleAsk() {
+      const question = questionInput.value.trim();
+      const topic    = document.getElementById('topic-select').value;
+      const lang     = document.getElementById('lang-select').value;
+
+      clearError(qError);
+      answerBox.classList.remove('visible');
+
+      if (!question) {
+        showError(qError, 'Please enter a question before submitting.');
+        questionInput.focus();
+        return;
+      }
+
+      askBtn.disabled = true;
+      setSpinner(askSpinner, true);
+      askStatusTx.textContent = 'Asking VoteWise…';
+
+      try {
+        const data = await apiPost('/api/ask', { question, topic, lang });
+        answerText.textContent = data.answer;
+        answerBox.classList.add('visible');
+        answerBox.focus();
+        askStatusTx.textContent = data.cached ? 'Served from cache.' : 'Answer ready.';
+      } catch (err) {
+        showError(qError, err.message || 'Something went wrong. Please try again.');
+        askStatusTx.textContent = '';
+      } finally {
+        askBtn.disabled = false;
+        setSpinner(askSpinner, false);
+      }
+    }
+
+    askBtn.addEventListener('click', handleAsk);
+
+    // Allow Ctrl+Enter to submit
+    questionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleAsk();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      questionInput.value = '';
+      counter.textContent = '0 / 1000';
+      counter.classList.remove('warn');
+      answerBox.classList.remove('visible');
+      clearError(qError);
+      askStatusTx.textContent = '';
+      questionInput.focus();
+    });
+
+    // ── Quiz ───────────────────────────────────────────────────────────
+    const quizBtn      = document.getElementById('quiz-btn');
+    const quizQuestion = document.getElementById('quiz-question');
+    const quizOptions  = document.getElementById('quiz-options');
+    const quizExpl     = document.getElementById('quiz-explanation');
+    const quizSpinner  = document.getElementById('quiz-spinner');
+    const quizStatusTx = document.getElementById('quiz-status-text');
+
+    let correctAnswer = '';
+
+    /**
+     * Fetch and render a multiple-choice quiz question
+     * from the /api/quiz endpoint.
+     */
+    async function handleQuiz() {
+      const topic = document.getElementById('quiz-topic-select').value;
+      const lang  = document.getElementById('lang-select').value;
+
+      quizBtn.disabled = true;
+      setSpinner(quizSpinner, true);
+      quizStatusTx.textContent = 'Generating quiz…';
+      quizOptions.innerHTML = '';
+      quizQuestion.textContent = '';
+      quizExpl.textContent = '';
+      quizExpl.classList.remove('visible');
+
+      try {
+        const data = await apiPost('/api/quiz', { topic, lang });
+        const q    = data.quiz;
+        correctAnswer = q.correct;
+
+        quizQuestion.textContent = q.question;
+
+        q.options.forEach((opt, idx) => {
+          const li = document.createElement('li');
+          li.className   = 'quiz-option';
+          li.textContent = opt;
+          li.setAttribute('role', 'option');
+          li.setAttribute('tabindex', '0');
+          li.setAttribute('aria-selected', 'false');
+          li.setAttribute('aria-label', `Option ${idx + 1}: ${opt}`);
+
+          /**
+           * Handle selection of a quiz option.
+           */
+          function selectOption() {
+            if (quizOptions.querySelector('.correct, .wrong')) return; // already answered
+            const letter = opt.charAt(0);
+            const isCorrect = letter === correctAnswer;
+            li.classList.add(isCorrect ? 'correct' : 'wrong');
+            li.setAttribute('aria-selected', 'true');
+
+            if (!isCorrect) {
+              // Highlight correct answer
+              Array.from(quizOptions.children).forEach((item) => {
+                if (item.textContent.charAt(0) === correctAnswer) {
+                  item.classList.add('correct');
+                }
+              });
+            }
+            quizExpl.textContent = `Explanation: ${q.explanation}`;
+            quizExpl.classList.add('visible');
+          }
+
+          li.addEventListener('click', selectOption);
+          li.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOption(); }
+          });
+
+          quizOptions.appendChild(li);
+        });
+
+        quizStatusTx.textContent = '';
+      } catch (err) {
+        quizStatusTx.textContent = err.message || 'Could not load quiz. Please try again.';
+      } finally {
+        quizBtn.disabled = false;
+        setSpinner(quizSpinner, false);
+      }
+    }
+
+    quizBtn.addEventListener('click', handleQuiz);
+  </script>
+</body>
+</html>
